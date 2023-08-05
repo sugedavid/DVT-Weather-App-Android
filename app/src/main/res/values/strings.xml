@@ -1,0 +1,29 @@
+<resources>
+    <string name="app_name">DVT Weather App</string>
+    <string name="notesTitle">Notes</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="dialog_message">New Note</string>
+    <string name="hint_note">Note…</string>
+    <string name="write_note">Write note</string>
+    <string name="note_added">Successfully added</string>
+    <string name="current_weather">Current weather</string>
+    <string name="last_refresh">⟳ Updated %1$s</string>
+    <string name="permission_denied">Permission Denied</string>
+    <string name="nav_open">Open</string>
+    <string name="nav_close">Close</string>
+    <string name="favourites">My Favourites</string>
+    <string name="no_favourites">You have no favourites</string>
+    <string name="loading_message">fetching weather info, this might take a minute…</string>
+
+    <!--    home-->
+    <string name="temp">%1$d°</string>
+    <string name="temp_current">%1$d°\nCurrent</string>
+    <string name="temp_min">%1$d°\nmin</string>
+    <string name="temp_max">%1$d°\nmax</string>
+
+    <!--    api keys-->
+    <string name="open_weather_apiKey">120ac724beb69c2bf18a9a3b4707aa19</string>
+    <string name="places_apiKey">AIzaSyCtGZtvST7IeXhLDnDcPBwQRgqcxEKcMY0</string>
+
+</resources>

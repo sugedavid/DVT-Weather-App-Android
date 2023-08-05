@@ -1,0 +1,7 @@
+<lint>
+
+    <issue id="IconColors"  severity="ignore" />
+    <issue id="Overdraw">
+        <ignore path=".../navigation.xml" />
+    </issue>
+</lint>

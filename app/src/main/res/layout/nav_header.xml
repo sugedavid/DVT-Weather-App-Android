@@ -4,24 +4,27 @@
     android:id="@+id/constraint_nav_header"
     android:layout_width="match_parent"
     android:layout_height="150dp"
-    android:background="@color/color_cloudy">
+    android:background="@color/color_cloudy"
+    >
 
     <ImageView
         android:id="@+id/imgLogo"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_gravity="center_vertical"
+        android:contentDescription="@string/drawer_logo"
         android:src="@mipmap/ic_launcher"
-        android:layout_marginStart="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
         android:text="@string/app_name"
         android:textColor="@color/white"
-        android:layout_marginStart="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imgLogo"
         app:layout_constraintTop_toTopOf="parent" />

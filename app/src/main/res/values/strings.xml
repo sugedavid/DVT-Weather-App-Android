@@ -12,9 +12,13 @@
     <string name="permission_denied">Permission Denied</string>
     <string name="nav_open">Open</string>
     <string name="nav_close">Close</string>
-    <string name="favourites">My Favourites</string>
+    <string name="favourites">Favourites</string>
     <string name="no_favourites">You have no favourites</string>
-    <string name="loading_message">fetching weather info, this might take a minute…</string>
+    <string name="loading_message">fetching weather info…</string>
+    <string name="weather_background">Weather background</string>
+    <string name="drawer_logo">drawer logo</string>
+    <string name="refresh">Refresh</string>
+
 
     <!--    home-->
     <string name="temp">%1$d°</string>

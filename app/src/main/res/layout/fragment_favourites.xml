@@ -4,13 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".presentation.fragments.FavouritesFragment">
+    tools:context=".views.fragments.FavouritesFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/color_sunny">
+        android:layout_height="match_parent">
 
         <TextView
             android:id="@+id/txtNoFavourites"

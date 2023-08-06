@@ -7,22 +7,22 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".presentation.fragments.HomeFragment">
+    tools:context=".views.fragments.HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/color_sunny">
+        android:background="@android:color/transparent">
 
         <ImageView
             android:id="@+id/imgBg1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/forest_sunny"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/weather_background" />
 
         <!--            Progress bar-->
         <LinearLayout
@@ -38,12 +38,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <ProgressBar
-                style="?android:attr/progressBarStyle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:indeterminate="true"
-                android:indeterminateTint="@color/white" />
+
 
             <TextView
                 android:layout_width="wrap_content"

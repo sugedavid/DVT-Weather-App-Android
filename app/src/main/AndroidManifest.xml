@@ -25,7 +25,7 @@
             android:resource="@array/preloaded_fonts" />
 
         <activity
-            android:name="com.dvt.weatherapp.presentation.MainActivity"
+            android:name="com.dvt.weatherapp.views.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

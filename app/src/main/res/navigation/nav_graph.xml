@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.dvt.weatherapp.presentation.fragments.HomeFragment"
+        android:name="com.dvt.weatherapp.views.fragments.HomeFragment"
         android:label="@string/app_name"
         tools:layout="@layout/fragment_home">
 
@@ -19,7 +19,7 @@
     <!--    favourites-->
     <fragment
         android:id="@+id/favouritesFragment"
-        android:name="com.dvt.weatherapp.presentation.fragments.FavouritesFragment"
+        android:name="com.dvt.weatherapp.views.fragments.FavouritesFragment"
         android:label="Favourites"
         tools:layout="@layout/fragment_favourites">
 
@@ -36,7 +36,7 @@
     <!--    map-->
     <fragment
         android:id="@+id/mapFragment"
-        android:name="com.dvt.weatherapp.presentation.fragments.MapsFragment"
+        android:name="com.dvt.weatherapp.views.fragments.MapsFragment"
         android:label="Maps"
         tools:layout="@layout/fragment_maps">
 

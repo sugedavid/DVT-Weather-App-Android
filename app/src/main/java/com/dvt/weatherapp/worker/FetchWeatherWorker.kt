@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.dvt.weatherapp.DvtWeatherApplication
-import com.dvt.weatherapp.common.Common
-import com.dvt.weatherapp.data.location.LocationTable
-import com.dvt.weatherapp.network.IOpenWeatherMap
-import com.dvt.weatherapp.network.RetrofitClient
+import com.dvt.weatherapp.data.utils.Utils
+import com.dvt.weatherapp.data.room.enitities.CurrentWeatherTable
+import com.dvt.weatherapp.data.retrofit.IOpenWeatherMap
+import com.dvt.weatherapp.data.retrofit.RetrofitClient
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -45,7 +45,7 @@ class FetchWeatherWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
                 compositeDisposable?.add(
                     mService!!.getWeatherByLatLng(
                         latitude, longitude,
-                        applicationContext.getString(Common().apiKey),
+                        applicationContext.getString(Utils().apiKey),
                         "metric"
                     )
                     !!.subscribeOn(Schedulers.io())
@@ -62,7 +62,7 @@ class FetchWeatherWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
 
                             // save weather info to db
                             locationDao.addLocation(
-                                LocationTable(
+                                CurrentWeatherTable(
                                     id = cityId,
                                     cityName = cityName,
                                     description = description,
@@ -77,8 +77,8 @@ class FetchWeatherWorker(ctx: Context, params: WorkerParameters) : CoroutineWork
                                 )
                             )
                             // save locationID & condition to preference
-                            Common().saveLocationID(applicationContext, cityId)
-                            Common().saveCondition(applicationContext, description)
+                            Utils().saveLocationID(applicationContext, cityId)
+                            Utils().saveCondition(applicationContext, description)
 
                         }, { throwable ->
                             Log.e("worker", "error:  ${throwable.message}")

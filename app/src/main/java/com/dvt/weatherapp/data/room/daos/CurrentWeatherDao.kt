@@ -8,15 +8,15 @@ import com.dvt.weatherapp.data.room.enitities.CurrentWeatherTable
 interface CurrentWeatherDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addLocation(currentWeatherTable: CurrentWeatherTable)
+    fun addCurrentWeather(currentWeatherTable: CurrentWeatherTable)
 
     @Update
-    fun updateLocation(currentWeatherTable: CurrentWeatherTable)
+    fun updateCurrentWeather(currentWeatherTable: CurrentWeatherTable)
 
     @Query("SELECT * FROM location_table ORDER BY id ASC")
     fun readAllData(): LiveData<List<CurrentWeatherTable>>
 
     @Query("SELECT * from location_table WHERE id = :id")
-    fun getLocation(id: Int): LiveData<CurrentWeatherTable>
+    fun getCurrentWeather(id: Int): LiveData<CurrentWeatherTable>
 
 }

@@ -30,12 +30,17 @@ class FavouritesAdapter(
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
 
+        val lat = filteredLocations[position].latitude
+        val lng = filteredLocations[position].longitude
+        val isFavourite = filteredLocations[position].isFavourite
+
         // location name
         holder.txtLocationName.text = filteredLocations[position].cityName
         holder.txtLocationName.setOnClickListener {
-            Utils().saveLocationID(context, filteredLocations[position].id)
-            weatherViewModel.latitude.value = filteredLocations[position].latitude
-            weatherViewModel.longitude.value = filteredLocations[position].longitude
+//            Utils().saveLocationID(context, filteredLocations[position].id)
+            weatherViewModel.latitude.value = lat
+            weatherViewModel.longitude.value = lng
+            weatherViewModel.fetchWeatherWorker(lat, lng, isFavourite)
             val action = FavouritesFragmentDirections.actionFavouritesFragmentToHomeFragment()
             holder.itemView.findNavController().navigate(action)
         }

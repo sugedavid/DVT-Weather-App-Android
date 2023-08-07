@@ -16,8 +16,8 @@ import com.dvt.weatherapp.data.room.enitities.CurrentWeatherTable
 )
 abstract class WeatherDatabase : RoomDatabase() {
 
-    abstract fun locationDao(): CurrentWeatherDao
-    abstract fun locationForecastDao(): WeatherForecastDao
+    abstract fun currentWeatherDao(): CurrentWeatherDao
+    abstract fun weatherForecastDao(): WeatherForecastDao
 
     companion object {
         @Volatile

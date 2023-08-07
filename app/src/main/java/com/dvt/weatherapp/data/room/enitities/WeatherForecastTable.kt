@@ -3,7 +3,7 @@ package com.dvt.weatherapp.data.room.enitities
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "city_forecast_table")
+@Entity(tableName = "forecast_table")
 data class WeatherForecastTable (
     @PrimaryKey(autoGenerate = true)
     val id: Int,

@@ -13,10 +13,13 @@ interface WeatherForecastDao {
     @Update
     fun updateLocationForecast(weatherForecastTable: WeatherForecastTable)
 
-    @Query("SELECT * FROM city_forecast_table ORDER BY id ASC")
+    @Query("SELECT * FROM forecast_table ORDER BY id ASC")
     fun readLocationForecast(): LiveData<List<WeatherForecastTable>>
 
-    @Query("SELECT * from city_forecast_table WHERE id = :id")
+    @Query("SELECT * from forecast_table WHERE id = :id")
     fun getLocationForecast(id: Int): LiveData<WeatherForecastTable>
+
+    @Query("DELETE FROM forecast_table")
+    fun nukeWeatherForecastTable()
 
 }

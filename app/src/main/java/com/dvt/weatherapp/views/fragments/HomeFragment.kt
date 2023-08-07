@@ -1,16 +1,23 @@
 package com.dvt.weatherapp.views.fragments
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.location.Location
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -27,12 +34,19 @@ import com.dvt.weatherapp.databinding.FragmentHomeBinding
 import com.dvt.weatherapp.data.retrofit.IOpenWeatherMap
 import com.dvt.weatherapp.data.retrofit.RetrofitClient
 import com.dvt.weatherapp.views.adapter.WeatherForecastAdapter
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.material.snackbar.Snackbar
+import com.karumi.dexter.Dexter
+import com.karumi.dexter.MultiplePermissionsReport
+import com.karumi.dexter.PermissionToken
+import com.karumi.dexter.listener.PermissionRequest
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.nav_header.view.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import java.util.*
-
 
 class HomeFragment : Fragment() {
 
@@ -58,6 +72,11 @@ class HomeFragment : Fragment() {
 
     // places autocomplete code
     private val autocompleteRequestCode = 1
+    private var lat = "0.0"
+    private var lng = "0.0"
+
+    // location client
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -120,43 +139,48 @@ class HomeFragment : Fragment() {
         }
 
         // check location permissions
-        weatherViewModel.checkLocationPermission(requireActivity())
+        checkLocationPermission(requireActivity(), this.viewLifecycleOwner)
 
-        // loading state
-        weatherViewModel.isLoading.observe(this.viewLifecycleOwner) {
-            if (it) {
-                binding.loadingF.visibility = View.VISIBLE
-                binding.view.visibility = View.INVISIBLE
-            } else {
-                binding.loadingF.visibility = View.GONE
-                binding.view.visibility = View.VISIBLE
-            }
+        // grant permission
+        binding.btnGrantPermission.setOnClickListener {
+            checkLocationPermission(requireActivity(), this.viewLifecycleOwner)
+        }
+
+        // permission
+        weatherViewModel.permissionAccepted.observe(this.viewLifecycleOwner) { isPermissionAccepted ->
+            if (!isPermissionAccepted) binding.btnGrantPermission.visibility = View.VISIBLE
+            else binding.btnGrantPermission.visibility = View.INVISIBLE
         }
 
         // current weather observable
         weatherViewModel.readAllData.observe(this.viewLifecycleOwner) { cities ->
 
-            weatherViewModel.isPermissionAccepted.observe(this.viewLifecycleOwner) { isPermissionAccepted ->
-                // check if db has current weather info & permissions are accepted
-                if (cities.isEmpty() && isPermissionAccepted) {
-                    // fetch current weather
-                    weatherViewModel.getCurrentWeatherInformation(requireContext(), false)
-                } else if (cities.isNotEmpty() && isPermissionAccepted) {
-                    // display current weather info from db
-                    weatherViewModel.getLocation(Utils().getLocationID(requireContext()))
-                        .observe(this.viewLifecycleOwner) { city ->
-                            updateViews(
-                                city.id,
-                                city.cityName,
-                                city.description,
-                                city.main,
-                                city.temperature,
-                                city.temperatureMin,
-                                city.temperatureMax,
-                                city.refreshTime,
-                                city.isFavourite
-                            )
-                        }
+            weatherViewModel.permissionAccepted.observe(this.viewLifecycleOwner) { isPermissionAccepted ->
+
+                if (isPermissionAccepted) {
+                    // check if db has current weather info & permissions are accepted
+                    if (cities.isEmpty()) {
+                        // fetch current weather
+                        weatherViewModel.fetchWeatherWorker(lat, lng, false)
+                    } else {
+                        // display current weather info from db
+                        weatherViewModel.getCurrentWeather(Utils().getLocationID(requireContext()))
+                            .observe(this.viewLifecycleOwner) { city ->
+                                updateViews(
+                                    city.id,
+                                    city.cityName,
+                                    city.description,
+                                    city.main,
+                                    city.temperature,
+                                    city.temperatureMin,
+                                    city.temperatureMax,
+                                    city.refreshTime,
+                                    city.isFavourite,
+                                    city.latitude,
+                                    city.longitude,
+                                )
+                            }
+                    }
                 }
             }
 
@@ -165,13 +189,9 @@ class HomeFragment : Fragment() {
         // weather forecast observable
         weatherViewModel.readLocationForecast.observe(this.viewLifecycleOwner) { cityForecast ->
 
-            weatherViewModel.isPermissionAccepted.observe(this.viewLifecycleOwner) { isPermissionAccepted ->
+            weatherViewModel.permissionAccepted.observe(this.viewLifecycleOwner) { isPermissionAccepted ->
 
-                // check if db has forecast weather info & permissions are accepted
-                if (cityForecast.isEmpty() && isPermissionAccepted) {
-                    //  fetch 5 day forecast
-                    weatherViewModel.getForecastWeatherInformation(requireContext())
-                } else if (cityForecast.isNotEmpty() && isPermissionAccepted) {
+                if (isPermissionAccepted) {
                     // load forecast weather info to recyclerview
                     val adapter = WeatherForecastAdapter(requireContext(), cityForecast)
                     val recyclerView = binding.recyclerForecast
@@ -194,8 +214,12 @@ class HomeFragment : Fragment() {
         temperatureMin: Int,
         temperatureMax: Int,
         refreshTime: Long,
-        isFavourite: Boolean
+        isFavourite: Boolean,
+        cityLat: String,
+        cityLng: String,
     ) {
+        lat = cityLat
+        lng = cityLng
 
         Utils().saveCondition(requireContext(), main)
         // city name
@@ -226,8 +250,7 @@ class HomeFragment : Fragment() {
 
         // refresh location
         binding.layoutHomeAppbar.imgRefresh.setOnClickListener {
-            weatherViewModel.getCurrentWeatherInformation(requireContext(),isFavourite )
-            weatherViewModel.getForecastWeatherInformation(requireContext())
+            weatherViewModel.fetchWeatherWorker(cityLat, cityLng, isFavourite)
         }
 
         // favourite location
@@ -236,6 +259,7 @@ class HomeFragment : Fragment() {
                 isFavourite -> {
                     R.drawable.ic_heart_white
                 }
+
                 else -> {
                     R.drawable.ic_heart_outline
                 }
@@ -255,8 +279,8 @@ class HomeFragment : Fragment() {
                         temperatureMin = temperatureMin,
                         temperatureMax = temperatureMax,
                         isFavourite = !isFavourite,
-                        latitude = weatherViewModel.latitude.value!!,
-                        longitude = weatherViewModel.longitude.value!!,
+                        latitude = lat,
+                        longitude = lng,
                     )
                 )
 
@@ -270,6 +294,64 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun checkLocationPermission(activity: Activity, lifecycleOwner: LifecycleOwner) {
+        Dexter.withActivity(activity)
+            .withPermissions(
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            .withListener(object : MultiplePermissionsListener {
+                override fun onPermissionsChecked(report: MultiplePermissionsReport) {
+                    if (report.areAllPermissionsGranted()) {
+                        if (ActivityCompat.checkSelfPermission(
+                                activity,
+                                Manifest.permission.ACCESS_FINE_LOCATION
+                            )
+                            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                                activity,
+                                Manifest.permission.ACCESS_COARSE_LOCATION
+                            ) != PackageManager.PERMISSION_GRANTED
+                        ) {
+                            weatherViewModel.permissionAccepted.value = false
+                            return
+                        }
+
+                        fusedLocationClient =
+                            LocationServices.getFusedLocationProviderClient(activity)
+                        fusedLocationClient.lastLocation
+                            .addOnSuccessListener { location: Location? ->
+                                // Got last known location. In some rare situations this can be null.
+                                weatherViewModel.permissionAccepted.observe(lifecycleOwner) { isPermissionAccepted ->
+                                    if (!isPermissionAccepted) {
+                                        weatherViewModel.latitude.value =
+                                            location?.latitude.toString()
+                                        weatherViewModel.longitude.value =
+                                            location?.longitude.toString()
+                                        weatherViewModel.permissionAccepted.value = true
+                                    }
+                                }
+
+//                                isPermissionAccepted = true
+                                weatherViewModel.permissionAccepted.value = true
+
+                            }
+                    }
+                }
+
+                override fun onPermissionRationaleShouldBeShown(
+                    permissions: List<PermissionRequest>,
+                    token: PermissionToken
+                ) {
+                    token.continuePermissionRequest()
+                    Snackbar.make(
+                        activity.findViewById(android.R.id.content),
+                        activity.getString(R.string.permission_denied),
+                        Snackbar.LENGTH_LONG
+                    ).show()
+                }
+            }).check()
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == autocompleteRequestCode) {
             when (resultCode) {
@@ -279,11 +361,12 @@ class HomeFragment : Fragment() {
 
                         weatherViewModel.latitude.value = place.latLng?.latitude.toString()
                         weatherViewModel.longitude.value = place.latLng?.longitude.toString()
+
                         // fetch weather info for new location
-                        weatherViewModel.getCurrentWeatherInformation(requireContext(), false)
-                        weatherViewModel.getForecastWeatherInformation(requireContext())
+                        weatherViewModel.fetchWeatherWorker(place.latLng?.latitude.toString(), place.latLng?.longitude.toString(), false)
                     }
                 }
+
                 AutocompleteActivity.RESULT_ERROR -> {
                     data?.let {
                         val status = Autocomplete.getStatusFromIntent(data)
@@ -294,6 +377,7 @@ class HomeFragment : Fragment() {
                         ).show()
                     }
                 }
+
                 Activity.RESULT_CANCELED -> {
                     // The user canceled the operation.
                 }

@@ -21,7 +21,6 @@ class FavouritesFragment : Fragment() {
             activity?.application!!
         )
     }
-
     // view binding
     private var _binding: FragmentFavouritesBinding? = null
     private val binding get() = _binding!!

@@ -47,6 +47,7 @@ class UtilsTest {
     fun changeBackgroundColorIsCorrect() {
         assertEquals(Utils().changeBackgroundColor("Rain"), R.color.color_rainy)
         assertEquals(Utils().changeBackgroundColor("Sun"), R.color.color_sunny)
+        assertEquals(Utils().changeBackgroundColor("Clear"), R.color.color_sunny)
         assertEquals(Utils().changeBackgroundColor("Cloud"), R.color.color_cloudy)
     }
 }

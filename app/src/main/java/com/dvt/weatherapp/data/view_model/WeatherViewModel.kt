@@ -6,7 +6,6 @@ import android.app.Application
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.os.CountDownTimer
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
@@ -26,7 +25,7 @@ import com.dvt.weatherapp.data.room.enitities.WeatherForecastTable
 import com.dvt.weatherapp.data.room.enitities.CurrentWeatherTable
 import com.dvt.weatherapp.data.retrofit.IOpenWeatherMap
 import com.dvt.weatherapp.data.retrofit.RetrofitClient
-import com.dvt.weatherapp.data.repository.LocationRepository
+import com.dvt.weatherapp.data.repository.WeatherRepository
 import com.dvt.weatherapp.worker.FetchWeatherWorker
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
@@ -34,21 +33,20 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
+import java.util.concurrent.TimeUnit
 
 class WeatherViewModel(application: Application) : ViewModel() {
 
     val readAllData: LiveData<List<CurrentWeatherTable>>
-    private val repository: LocationRepository
-    private val _locationDao = WeatherDatabase.getDatabase(application).locationDao()
+    private val repository: WeatherRepository
+    private val _locationDao = WeatherDatabase.getDatabase(application).currentWeatherDao()
+    private val _forecastDao = WeatherDatabase.getDatabase(application).weatherForecastDao()
     private var _compositeDisposable: CompositeDisposable? = null
     private var _mService: IOpenWeatherMap? = null
     private val _retrofit: Retrofit? = RetrofitClient.instance
 
     // workManager
     private val _workManager = WorkManager.getInstance(application.applicationContext)
-
-    // location client
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     // current weather info
     private var cityId = 0
@@ -64,58 +62,58 @@ class WeatherViewModel(application: Application) : ViewModel() {
     var latitude = MutableLiveData("0.0")
     var longitude = MutableLiveData("0.0")
 
-    // loading
-    private var _isLoading = MutableLiveData(false)
-    val isLoading: LiveData<Boolean> = _isLoading
+    var permissionAccepted = MutableLiveData(false)
 
-    // permission
-    private var _isPermissionAccepted = MutableLiveData(false)
-    val isPermissionAccepted: LiveData<Boolean> = _isPermissionAccepted
 
     // weather forecast
     private val _readLocationForecast: LiveData<List<WeatherForecastTable>>
     var readLocationForecast: LiveData<List<WeatherForecastTable>>
     private val _locationForecastDao =
-        WeatherDatabase.getDatabase(application).locationForecastDao()
+        WeatherDatabase.getDatabase(application).weatherForecastDao()
 
     init {
         _compositeDisposable = CompositeDisposable()
         _mService = _retrofit?.create(IOpenWeatherMap::class.java)
-        repository = LocationRepository(_locationDao)
+        repository = WeatherRepository(_locationDao, _forecastDao)
         readAllData = repository.readAllData
         _readLocationForecast = _locationForecastDao.readLocationForecast()
         readLocationForecast = _readLocationForecast
     }
 
-    fun addLocation(currentWeatherTable: CurrentWeatherTable) {
+    private fun addCurrentWeather(currentWeatherTable: CurrentWeatherTable) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.addLocation(currentWeatherTable)
+            repository.addCurrentWeather(currentWeatherTable)
         }
     }
 
     fun updateCity(currentWeatherTable: CurrentWeatherTable) {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.updateLocation(currentWeatherTable)
+            repository.updateCurrentWeather(currentWeatherTable)
         }
     }
 
-    fun getLocation(id: Int): LiveData<CurrentWeatherTable> {
-        return _locationDao.getLocation(id)
+    fun nukeWeatherForecastDb() {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.nukeWeatherForecast()
+        }
     }
 
-    fun addLocationForecast(weatherForecastTable: WeatherForecastTable) {
+    fun getCurrentWeather(id: Int): LiveData<CurrentWeatherTable> {
+        return _locationDao.getCurrentWeather(id)
+    }
+
+    private fun addLocationForecast(weatherForecastTable: WeatherForecastTable) {
         viewModelScope.launch(Dispatchers.IO) {
             _locationForecastDao.addLocationForecast(weatherForecastTable)
         }
     }
 
-    // fetch current weather info
-    fun getCurrentWeatherInformation(context: Context, isFavourite: Boolean) {
-        _isLoading.value = true
+    // fetches current weather info
+    fun getCurrentWeatherInformation(context: Context, lat: String, lng: String, isFavourite: Boolean) {
         viewModelScope.launch(Dispatchers.IO) {
             _compositeDisposable?.add(
                 _mService!!.getWeatherByLatLng(
-                    latitude.value, longitude.value,
+                    lat, lng,
                     context.getString(Utils().apiKey),
                     "metric"
                 )
@@ -132,7 +130,7 @@ class WeatherViewModel(application: Application) : ViewModel() {
                         temperatureMax = weatherResult.main?.temp_max?.toInt() ?: 0
 
                         // save weather info to db
-                        addLocation(
+                        addCurrentWeather(
                             CurrentWeatherTable(
                                 id = cityId,
                                 cityName = cityName,
@@ -143,20 +141,15 @@ class WeatherViewModel(application: Application) : ViewModel() {
                                 temperatureMin = temperatureMin,
                                 temperatureMax = temperatureMax,
                                 isFavourite = isFavourite,
-                                latitude = latitude.value ?: "0.0",
-                                longitude = longitude.value ?: "0.0",
+                                latitude = lat,
+                                longitude = lng,
                             )
                         )
                         // save locationID & condition to preference
                         Utils().saveLocationID(context, cityId)
                         Utils().saveCondition(context, description)
 
-                        // start worker
-                        fetchWeatherCounter()
-
-                        _isLoading.value = false
                     }, { throwable ->
-                        _isLoading.value = false
                         Toast.makeText(
                             context,
                             throwable.message,
@@ -168,20 +161,20 @@ class WeatherViewModel(application: Application) : ViewModel() {
         }
     }
 
-    // fetch forecast info
-    fun getForecastWeatherInformation(context: Context) {
-
+    // fetches daily forecast info
+    fun getWeatherForecastInformation(context: Context, lat: String, lng: String,) {
+        // clear forecast data from db
+        nukeWeatherForecastDb()
         viewModelScope.launch {
             _compositeDisposable!!.add(
                 _mService!!.getForecastWeatherByLatLng(
-                    latitude.value, longitude.value,
+                    lat, lng,
                     context.getString(Utils().apiKey),
                     "metric"
                 )
                 !!.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ weatherForecastResult ->
-
 
                         for (result in weatherForecastResult?.list!!) {
                             val forecastId = result.weather?.get(0)?.id ?: 0
@@ -192,7 +185,7 @@ class WeatherViewModel(application: Application) : ViewModel() {
                             // save weatherForecastResult to db
                             addLocationForecast(
                                 WeatherForecastTable(
-                                    id = forecastId, day = forecastDay, main = main,
+                                    id = 0, day = forecastDay, main = main,
                                     temperature = forecastTemperature
                                 )
                             )
@@ -210,91 +203,35 @@ class WeatherViewModel(application: Application) : ViewModel() {
 
     }
 
-    private fun fetchWeatherWorker() {
-
-        val builder = Data.Builder()
-        builder.putString("latitude", latitude.value)
-        builder.putString("longitude", latitude.value)
+    // fetches weather data every 1 hour in the background using work manager
+    fun fetchWeatherWorker(lat: String, lng: String, isFavourite: Boolean) {
 
         // internet connection constraint
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        val fetchLocationWorkRequest: WorkRequest =
-            OneTimeWorkRequestBuilder<FetchWeatherWorker>()
-                .setInputData(builder.build())
-                .setConstraints(constraints)
-                .build()
-        _workManager.enqueue(fetchLocationWorkRequest)
+        // input data
+        val data = Data.Builder()
+            .putString("latitude", lat)
+            .putString("longitude", lng)
+            .putBoolean("isFavourite", isFavourite)
+            .build()
 
-    }
-
-    // fetch weather every hour
-    fun fetchWeatherCounter() {
-        val timer = object : CountDownTimer(900000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-            }
-
-            override fun onFinish() {
-                fetchWeatherWorker()
-            }
-        }
-        timer.start()
+        // workRequest to fetch weather data every 1 hour in the background
+        val workRequest = PeriodicWorkRequest.Builder(
+            FetchWeatherWorker::class.java,
+            1,
+            TimeUnit.HOURS
+        )
+            .setConstraints(constraints)
+            .setInputData(data)
+            .build()
+        _workManager.enqueue(workRequest)
     }
 
     // checks for location permissions
-    fun checkLocationPermission(activity: Activity) {
-        Dexter.withActivity(activity)
-            .withPermissions(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-            .withListener(object : MultiplePermissionsListener {
-                override fun onPermissionsChecked(report: MultiplePermissionsReport) {
-                    if (report.areAllPermissionsGranted()) {
-                        if (ActivityCompat.checkSelfPermission(
-                                activity,
-                                Manifest.permission.ACCESS_FINE_LOCATION
-                            )
-                            != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                                activity,
-                                Manifest.permission.ACCESS_COARSE_LOCATION
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            _isPermissionAccepted.value = false
-                            return
-                        }
 
-                        fusedLocationClient =
-                            LocationServices.getFusedLocationProviderClient(activity)
-                        fusedLocationClient.lastLocation
-                            .addOnSuccessListener { location: Location? ->
-                                // Got last known location. In some rare situations this can be null.
-                                if(!isPermissionAccepted.value!!){
-                                    latitude.value = location?.latitude.toString()
-                                    longitude.value = location?.longitude.toString()
-                                }
-
-                                _isPermissionAccepted.value = true
-
-                            }
-                    }
-                }
-
-                override fun onPermissionRationaleShouldBeShown(
-                    permissions: List<PermissionRequest>,
-                    token: PermissionToken
-                ) {
-                    token.continuePermissionRequest()
-                    Snackbar.make(
-                        activity.findViewById(android.R.id.content),
-                        activity.getString(R.string.permission_denied),
-                        Snackbar.LENGTH_LONG
-                    ).show()
-                }
-            }).check()
-    }
 
     class LocationViewModelFactory(private val application: Application) :
         ViewModelProvider.Factory {

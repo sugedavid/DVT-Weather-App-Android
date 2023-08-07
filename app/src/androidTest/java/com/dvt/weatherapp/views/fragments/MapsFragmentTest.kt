@@ -33,7 +33,7 @@ class MapsFragmentTest {
         database = Room.inMemoryDatabaseBuilder(
             context, WeatherDatabase::class.java
         ).build()
-        currentWeatherDao = database.locationDao()
+        currentWeatherDao = database.currentWeatherDao()
 
         // fill data to db
         val currentWeatherTable = CurrentWeatherTable(
@@ -50,7 +50,7 @@ class MapsFragmentTest {
             longitude = "0.0",
         )
 
-        currentWeatherDao.addLocation(currentWeatherTable)
+        currentWeatherDao.addCurrentWeather(currentWeatherTable)
     }
 
     @After

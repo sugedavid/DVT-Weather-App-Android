@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/gh/sugedavid/DVT-Weather-App/branch/main/graph/badge.svg?token=BW40W5UTNY)](https://codecov.io/gh/sugedavid/DVT-Weather-App)
+[![codecov](https://codecov.io/gh/sugedavid/DVT-Weather-App-Android/branch/master/graph/badge.svg?token=330WDPLF5C)](https://codecov.io/gh/sugedavid/DVT-Weather-App-Android)
 
 # DVT WeatherApp
 

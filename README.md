@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/sugedavid/DVT-Weather-App/branch/main/graph/badge.svg?token=BW40W5UTNY)](https://codecov.io/gh/sugedavid/DVT-Weather-App)
+
 # DVT WeatherApp
 
 An Android (Kotlin) project.

@@ -8,7 +8,7 @@ import com.dvt.weatherapp.data.room.enitities.WeatherForecastTable
 interface WeatherForecastDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun addLocationForecast(weatherForecastTable: WeatherForecastTable)
+    fun addWeatherForecast(weatherForecastTable: WeatherForecastTable)
 
     @Update
     fun updateLocationForecast(weatherForecastTable: WeatherForecastTable)
@@ -20,6 +20,6 @@ interface WeatherForecastDao {
     fun getLocationForecast(id: Int): LiveData<WeatherForecastTable>
 
     @Query("DELETE FROM forecast_table")
-    fun nukeWeatherForecastTable()
+    fun clearWeatherForecastTable()
 
 }

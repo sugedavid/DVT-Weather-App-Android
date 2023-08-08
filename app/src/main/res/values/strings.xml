@@ -20,6 +20,10 @@
     <string name="refresh">Refresh</string>
     <string name="map">Map</string>
     <string name="back">Back</string>
+    <string name="grant_location_permission">Grant location permission</string>
+    <string name="weather_icon">Weather icon</string>
+    <string name="select">Select</string>
+    <string name="current">Current</string>
 
     <!--    home-->
     <string name="temp">%1$d°</string>
@@ -30,6 +34,6 @@
     <!--    api keys-->
     <string name="open_weather_apiKey">120ac724beb69c2bf18a9a3b4707aa19</string>
     <string name="places_apiKey">AIzaSyCtGZtvST7IeXhLDnDcPBwQRgqcxEKcMY0</string>
-    <string name="grant_location_permission">Grant location permission</string>
+
 
 </resources>

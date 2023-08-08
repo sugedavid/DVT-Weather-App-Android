@@ -1,5 +1,6 @@
 package com.dvt.weatherapp.data.utils
 
+import android.annotation.SuppressLint
 import android.content.Context
 import com.dvt.weatherapp.R
 import java.text.SimpleDateFormat
@@ -9,25 +10,39 @@ class Utils {
     val apiKey = R.string.open_weather_apiKey
     val baseUrl = "https://api.openweathermap.org/data/2.5/"
 
+    // weather states
     enum class Weather {
         Sun, Cloud, Rain, Clear
     }
 
+    // formats date from long format to day of the week and date
+    @SuppressLint("SimpleDateFormat")
     fun convertUnixToDate(dt: Long): String? {
         val date = Date(dt * 1000L)
         val simpleDateFormat = SimpleDateFormat("EEE, d MMM, yyy")
         return simpleDateFormat.format(date)
     }
 
+    // formats date from long format to day of the week and time
+    @SuppressLint("SimpleDateFormat")
     fun convertUnixToHour(dt: Long): String? {
         val date = Date(dt * 1000L)
         val simpleDateFormat = SimpleDateFormat("EE, h:mm a")
         return simpleDateFormat.format(date)
     }
 
+    // formats date from long format to day of the week
+    @SuppressLint("SimpleDateFormat")
     fun convertUnixToDay(dt: Long): String? {
         val date = Date(dt * 1000L)
         val simpleDateFormat = SimpleDateFormat("EEEE")
+        return simpleDateFormat.format(date)
+    }
+
+    // formats date from long format to time
+    fun convertUnixToTime(dt: Long): String? {
+        val date = Date(dt * 1000L)
+        val simpleDateFormat = SimpleDateFormat("h:mm a")
         return simpleDateFormat.format(date)
     }
 

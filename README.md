@@ -18,12 +18,13 @@ An Android (Kotlin) project.
    - Architecture Components
    - Navigation Components
    - Room Database
-   - Work Manager (fetch current weather and 16 day weather forecast information every 1 hr in the background)
+   - Work Manager (fetch current weather and 16-day weather forecast information every 1 hr in the background)
    
 2. [Retrofit - HTTP client](https://square.github.io/retrofit/)
 3. [Code Coverage](https://docs.codecov.com/docs/about-code-coverage)
 4. [Github Actions - CI/CD](https://docs.github.com/en/actions)
 5. Static code analysis using **Lint**
+6. Coroutines - Asynchronous tasks
 
 -------------------
 

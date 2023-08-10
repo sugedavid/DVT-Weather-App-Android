@@ -31,21 +31,26 @@ An Android (Kotlin) project.
 
 ### Home
 
-![home](https://user-images.githubusercontent.com/63927686/195557050-85e327ef-9d6b-408a-b64b-62bfb1f9f815.png)
+![Home](https://github.com/sugedavid/DVT-Weather-App-Android/assets/63927686/659411ba-7bd1-489d-a11a-f35e5f9923e3)
+
 
 ### Search
 
-![search](https://user-images.githubusercontent.com/63927686/194921063-01f8b040-38e9-4ab6-ad6f-ebf8c2c6bd62.png)
+![Search](https://github.com/sugedavid/DVT-Weather-App-Android/assets/63927686/b21ceb62-ee70-4ffe-8477-425d230d23b5)
+
 
 ### Drawer
 
-![drawer](https://user-images.githubusercontent.com/63927686/194921097-e44ddfa0-ba9c-40eb-8bdb-ec6a2c4d7ab0.png)
+![Drawer](https://github.com/sugedavid/DVT-Weather-App-Android/assets/63927686/f60ab1b9-b5b0-45df-816a-db6b7b9752a7)
+
 
 ### Favourites
 
-![favourites](https://user-images.githubusercontent.com/63927686/194921123-5c0c3c8c-5039-4208-8f34-4710e969fb02.png)
+![Favourites](https://github.com/sugedavid/DVT-Weather-App-Android/assets/63927686/b2ca5e8a-faf5-475e-bb14-b8967d2e6717)
+
 
 ### Map
 
-![map](https://user-images.githubusercontent.com/63927686/195557106-78792115-2e79-48c0-8212-af63839f8cec.png)
+![Map](https://github.com/sugedavid/DVT-Weather-App-Android/assets/63927686/46092440-757c-4269-876e-7c42b7f653af)
+
 

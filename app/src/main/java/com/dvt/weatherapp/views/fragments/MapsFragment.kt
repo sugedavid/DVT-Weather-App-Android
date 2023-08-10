@@ -64,29 +64,34 @@ class MapsFragment : Fragment(), OnMapReadyCallback {
         weatherViewModel.readAllData.observe(this.viewLifecycleOwner) { location ->
 
             // check if db has forecast weather info
-            if ((location.isNotEmpty() && !location.none { it.isFavourite })) {
-
+            if ((location.isNotEmpty())) {
                 // loop through data & add markers
                 for (item in location) {
-                    Log.d("map_data", item.cityName)
-                    googleMap.addMarker(
-                        MarkerOptions()
-                            .position(LatLng(item.latitude.toDouble(), item.longitude.toDouble()))
-                            .title("${item.cityName}")
-                    )
+                    if (item.isFavourite) {
+                        googleMap.addMarker(
+                            MarkerOptions()
+                                .position(
+                                    LatLng(
+                                        item.latitude.toDouble(),
+                                        item.longitude.toDouble()
+                                    )
+                                )
+                                .title("${item.cityName}")
+                        )
+                    }
 
                 }
 
                 // animate to first favourite item
-                val coordinate = LatLng(
-                    location[0].latitude.toDouble(),
-                    location[0].longitude.toDouble()
-                )
+//                val coordinate = LatLng(
+//                    location[0].latitude.toDouble(),
+//                    location[0].longitude.toDouble()
+//                )
 
-                val locationAnimate = CameraUpdateFactory.newLatLngZoom(
-                    coordinate, 3f
-                )
-                googleMap.moveCamera(locationAnimate)
+//                val locationAnimate = CameraUpdateFactory.newLatLngZoom(
+//                    coordinate, 3f
+//                )
+//                googleMap.moveCamera(locationAnimate)
 
             }
         }

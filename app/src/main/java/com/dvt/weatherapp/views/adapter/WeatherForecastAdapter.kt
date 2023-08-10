@@ -26,14 +26,21 @@ class WeatherForecastAdapter(
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
         //Load weather icon
         holder.imgWeather.setBackgroundResource(Utils().changeWeatherImage(weatherForecastResult[position].main))
-        val time: String? = weatherForecastResult[position].day.let {
+        val day: String? = weatherForecastResult[position].day.let {
             Utils().convertUnixToDay(
                 it
             )
         }
+        val time: String? = weatherForecastResult[position].day.let {
+            Utils().convertUnixToTime(
+                it
+            )
+        }
 
-        //time
-        holder.txtDateTime.text = time
+        // day
+        holder.txtDateTime.text = day
+        // time
+        holder.txtTime.text = time
         //temperature
         holder.txtTemperature.text = StringBuilder(
             java.lang.String.valueOf(
@@ -48,6 +55,7 @@ class WeatherForecastAdapter(
 
     class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var txtDateTime: TextView = itemView.findViewById(R.id.txt_date)
+        var txtTime: TextView = itemView.findViewById(R.id.txt_time)
         var txtTemperature: TextView = itemView.findViewById(R.id.txt_temperature)
         var imgWeather: ImageView = itemView.findViewById(R.id.img_weather)
     }

@@ -9,7 +9,6 @@ on:
     branches: [ master ]
 
 jobs:
-  # This workflow contains a single job called "build"
   test:
     # The type of runner that the job will run on
     runs-on: macos-latest
@@ -18,10 +17,10 @@ jobs:
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE, so the job can access it
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: Set up JDK 17
         uses: actions/setup-java@v2
         with:
-          java-version: '11'
+          java-version: '17'
           distribution: 'temurin'
           cache: gradle
 
@@ -32,11 +31,6 @@ jobs:
           api-level: 29
           script: ./gradlew connectedCheck
 
-  coverage:
-    name: Generate Report
-    needs: test
-    runs-on: macos-latest
-    steps:
       - name: Generate Report
         uses: actions/upload-artifact@v2
         with:
@@ -45,34 +39,31 @@ jobs:
 
       - name: Download Test Reports Folder
         uses: actions/download-artifact@v2
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           name: report
           path: app/build/reports/coverage/androidTest/debug
 
       - name: Upload Test Report
         uses: codecov/codecov-action@v2
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: "app/build/reports/coverage/androidTest/debug/report.xml"
 
-  # apk:
-  #   name: Generate apk
-  #   needs: test
-  #   runs-on: macos-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v1
-  #     - name: Setup JDK
-  #       uses: actions/setup-java@v1
-  #       with:
-  #         java-version: 11
-  #     - name: Build APK
-  #       run: bash ./gradlew assembleDebug --stacktrace
-  #     - name: Upload APK
-  #       uses: actions/upload-artifact@v1
-  #       with:
-  #         name: apk
-  #         path: app/build/outputs/apk/debug/app-debug.apk
+  apk:
+     name: Generate apk
+     needs: test
+     runs-on: macos-latest
+     if: github.ref == 'refs/heads/master'
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v1
+       - name: Setup JDK
+         uses: actions/setup-java@v1
+         with:
+           java-version: 17
+       - name: Build APK
+         run: bash ./gradlew assembleDebug --stacktrace
+       - name: Upload APK
+         uses: actions/upload-artifact@v1
+         with:
+           name: apk
+           path: app/build/outputs/apk/debug/app-debug.apk

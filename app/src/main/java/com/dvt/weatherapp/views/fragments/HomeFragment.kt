@@ -33,6 +33,7 @@ import com.dvt.weatherapp.data.view_model.WeatherViewModel
 import com.dvt.weatherapp.databinding.FragmentHomeBinding
 import com.dvt.weatherapp.data.retrofit.IOpenWeatherMap
 import com.dvt.weatherapp.data.retrofit.RetrofitClient
+import com.dvt.weatherapp.databinding.NavHeaderBinding
 import com.dvt.weatherapp.views.adapter.WeatherForecastAdapter
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -43,7 +44,6 @@ import com.karumi.dexter.PermissionToken
 import com.karumi.dexter.listener.PermissionRequest
 import com.karumi.dexter.listener.multi.MultiplePermissionsListener
 import io.reactivex.disposables.CompositeDisposable
-import kotlinx.android.synthetic.main.nav_header.view.*
 import kotlinx.coroutines.launch
 import retrofit2.Retrofit
 import java.util.*
@@ -218,8 +218,6 @@ class HomeFragment : Fragment() {
         cityLat: String,
         cityLng: String,
     ) {
-        lat = cityLat
-        lng = cityLng
 
         Utils().saveCondition(requireContext(), main)
         // city name
@@ -244,7 +242,11 @@ class HomeFragment : Fragment() {
         binding.constraintLayout.setBackgroundResource(
             Utils().changeBackgroundColor(main)
         )
-        binding.navView.constraint_nav_header?.setBackgroundResource(
+
+        // change nav header background color
+        val viewHeader = binding.navView.getHeaderView(0)
+        val navViewHeaderBinding: NavHeaderBinding = NavHeaderBinding.bind(viewHeader)
+        navViewHeaderBinding.constraintNavHeader.setBackgroundResource(
             Utils().changeBackgroundColor(main)
         )
 
@@ -279,8 +281,8 @@ class HomeFragment : Fragment() {
                         temperatureMin = temperatureMin,
                         temperatureMax = temperatureMax,
                         isFavourite = !isFavourite,
-                        latitude = lat,
-                        longitude = lng,
+                        latitude = cityLat,
+                        longitude = cityLng,
                     )
                 )
 
@@ -294,6 +296,7 @@ class HomeFragment : Fragment() {
         }
     }
 
+    // checks for location permissions
     private fun checkLocationPermission(activity: Activity, lifecycleOwner: LifecycleOwner) {
         Dexter.withActivity(activity)
             .withPermissions(
@@ -323,6 +326,8 @@ class HomeFragment : Fragment() {
                                 // Got last known location. In some rare situations this can be null.
                                 weatherViewModel.permissionAccepted.observe(lifecycleOwner) { isPermissionAccepted ->
                                     if (!isPermissionAccepted) {
+                                        lat = location?.latitude.toString()
+                                        lng = location?.longitude.toString()
                                         weatherViewModel.latitude.value =
                                             location?.latitude.toString()
                                         weatherViewModel.longitude.value =
@@ -331,9 +336,7 @@ class HomeFragment : Fragment() {
                                     }
                                 }
 
-//                                isPermissionAccepted = true
                                 weatherViewModel.permissionAccepted.value = true
-
                             }
                     }
                 }
@@ -363,7 +366,11 @@ class HomeFragment : Fragment() {
                         weatherViewModel.longitude.value = place.latLng?.longitude.toString()
 
                         // fetch weather info for new location
-                        weatherViewModel.fetchWeatherWorker(place.latLng?.latitude.toString(), place.latLng?.longitude.toString(), false)
+                        weatherViewModel.fetchWeatherWorker(
+                            place.latLng?.latitude.toString(),
+                            place.latLng?.longitude.toString(),
+                            false
+                        )
                     }
                 }
 

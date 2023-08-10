@@ -17,11 +17,7 @@ class WeatherRepository(private val currentWeatherDao: CurrentWeatherDao, privat
         currentWeatherDao.updateCurrentWeather(currentWeatherTable)
     }
 
-    fun getCity(id: Int): LiveData<CurrentWeatherTable>{
-        return currentWeatherDao.getCurrentWeather(id)
-    }
-
-    fun nukeWeatherForecast() {
-        return weatherForecastDao.nukeWeatherForecastTable()
+    fun clearWeatherForecast() {
+        return weatherForecastDao.clearWeatherForecastTable()
     }
 }

@@ -11,7 +11,7 @@ import com.dvt.weatherapp.data.room.enitities.CurrentWeatherTable
 
 @Database(
     entities = [CurrentWeatherTable::class, WeatherForecastTable::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class WeatherDatabase : RoomDatabase() {

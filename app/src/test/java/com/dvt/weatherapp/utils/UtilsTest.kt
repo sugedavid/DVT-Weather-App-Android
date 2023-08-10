@@ -24,6 +24,11 @@ class UtilsTest {
     }
 
     @Test
+    fun convertUnixToTimeIsCorrect() {
+        assertEquals(Utils().convertUnixToTime(longDate), "2:51 pm")
+    }
+
+    @Test
     fun changeFavouriteImageIsCorrect() {
         assertEquals(Utils().changeFavouriteImage(true), R.drawable.ic_heart_white)
         assertEquals(Utils().changeFavouriteImage(false), R.drawable.ic_heart_outline)

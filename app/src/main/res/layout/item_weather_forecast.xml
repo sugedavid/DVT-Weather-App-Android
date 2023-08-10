@@ -25,6 +25,20 @@
         tools:text="Wednesday"
         tools:textColor="@color/black" />
 
+    <!--        time-->
+    <TextView
+        android:id="@+id/txt_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_sans"
+        android:gravity="start"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_date"
+        tools:text="12 am"
+        tools:textColor="@color/black" />
+
 <!--        Weather icon-->
     <ImageView
         android:id="@+id/img_weather"
@@ -32,7 +46,8 @@
         android:layout_height="32dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:contentDescription="@string/weather_icon" />
 
 <!--        Temperature-->
     <TextView

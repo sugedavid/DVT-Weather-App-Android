@@ -1,24 +1,10 @@
 package com.dvt.weatherapp.data.view_model
 
-import android.Manifest
-import android.app.Activity
 import android.app.Application
 import android.content.Context
-import android.content.pm.PackageManager
-import android.location.Location
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.*
 import androidx.work.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
-import com.google.android.material.snackbar.Snackbar
-import com.karumi.dexter.Dexter
-import com.karumi.dexter.MultiplePermissionsReport
-import com.karumi.dexter.PermissionToken
-import com.karumi.dexter.listener.PermissionRequest
-import com.karumi.dexter.listener.multi.MultiplePermissionsListener
-import com.dvt.weatherapp.R
 import com.dvt.weatherapp.data.room.db.WeatherDatabase
 import com.dvt.weatherapp.data.utils.Utils
 import com.dvt.weatherapp.data.room.enitities.WeatherForecastTable
@@ -92,9 +78,9 @@ class WeatherViewModel(application: Application) : ViewModel() {
         }
     }
 
-    fun nukeWeatherForecastDb() {
+    private fun clearWeatherForecastDb() {
         viewModelScope.launch(Dispatchers.IO) {
-            repository.nukeWeatherForecast()
+            repository.clearWeatherForecast()
         }
     }
 
@@ -102,9 +88,9 @@ class WeatherViewModel(application: Application) : ViewModel() {
         return _locationDao.getCurrentWeather(id)
     }
 
-    private fun addLocationForecast(weatherForecastTable: WeatherForecastTable) {
+    private fun addWeatherForecast(weatherForecastTable: WeatherForecastTable) {
         viewModelScope.launch(Dispatchers.IO) {
-            _locationForecastDao.addLocationForecast(weatherForecastTable)
+            _locationForecastDao.addWeatherForecast(weatherForecastTable)
         }
     }
 
@@ -163,9 +149,11 @@ class WeatherViewModel(application: Application) : ViewModel() {
 
     // fetches daily forecast info
     fun getWeatherForecastInformation(context: Context, lat: String, lng: String,) {
-        // clear forecast data from db
-        nukeWeatherForecastDb()
+
         viewModelScope.launch {
+            // clear forecast data from db
+            clearWeatherForecastDb()
+
             _compositeDisposable!!.add(
                 _mService!!.getForecastWeatherByLatLng(
                     lat, lng,
@@ -175,15 +163,14 @@ class WeatherViewModel(application: Application) : ViewModel() {
                 !!.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe({ weatherForecastResult ->
-
+                        val forecastId = weatherForecastResult?.city?.id ?: 0
                         for (result in weatherForecastResult?.list!!) {
-                            val forecastId = result.weather?.get(0)?.id ?: 0
                             val main = result.weather?.get(0)?.main ?: ""
                             val forecastDay = result.dt
                             val forecastTemperature = result.main?.temp?.toInt() ?: 0
 
                             // save weatherForecastResult to db
-                            addLocationForecast(
+                            addWeatherForecast(
                                 WeatherForecastTable(
                                     id = 0, day = forecastDay, main = main,
                                     temperature = forecastTemperature
@@ -229,9 +216,6 @@ class WeatherViewModel(application: Application) : ViewModel() {
             .build()
         _workManager.enqueue(workRequest)
     }
-
-    // checks for location permissions
-
 
     class LocationViewModelFactory(private val application: Application) :
         ViewModelProvider.Factory {
